@@ -682,13 +682,11 @@ class VeraHandler(BaseHTTPRequestHandler):
         if self.path == "/v1/metadata":
             self.send_json(
                 {
-                    "team_name": "Vera Local",
-                    "team_members": ["Codex"],
-                    "model": "deterministic-python-composer",
-                    "approach": "stateful 4-context composer with trigger dispatch, reply intent handling, and no external payload calls",
-                    "contact_email": "local@example.com",
-                    "version": "1.0.0",
-                    "submitted_at": "2026-04-26T08:00:00Z",
+                    "team_name": "Team Alpha",
+                    "team_members": ["Alice", "Bob"],
+                    "model": "claude-opus-4-7",
+                    "approach": "single-prompt composer with retrieval",
+                    "version": "1.2.0",
                 }
             )
             return
