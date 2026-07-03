@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vera Merchant Console</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Primary navigation">
+        <div class="brand-row">
+          <div class="brand-mark">V</div>
+          <div>
+            <p class="eyebrow">magicpin AI</p>
+            <h1>Vera Console</h1>
+          </div>
+        </div>
+
+        <label class="search-box">
+          <span>Search</span>
+          <input id="conversation-search" type="search" placeholder="Merchant, city, trigger..." />
+        </label>
+
+        <nav class="nav-list">
+          <button class="nav-item active" type="button" data-section="conversations">
+            <span class="nav-icon">C</span>
+            Conversations
+          </button>
+          <button class="nav-item" type="button" data-section="merchants">
+            <span class="nav-icon">M</span>
+            Active Merchants
+          </button>
+          <button class="nav-item" type="button" data-section="queue">
+            <span class="nav-icon">Q</span>
+            Trigger Queue
+          </button>
+          <button class="nav-item" type="button" data-section="analytics">
+            <span class="nav-icon">A</span>
+            Analytics
+          </button>
+          <button class="nav-item" type="button" data-section="settings">
+            <span class="nav-icon">S</span>
+            Settings
+          </button>
+        </nav>
+
+        <div class="filter-block">
+          <p class="section-label">Category filter</p>
+          <div id="category-filters" class="chip-grid"></div>
+        </div>
+
+        <div class="conversation-list" id="conversation-list" aria-live="polite"></div>
+      </aside>
+
+      <main class="main-area">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Live operations</p>
+            <h2>Merchant WhatsApp command center</h2>
+          </div>
+          <div class="topbar-actions">
+            <button class="icon-button" id="simulate-trigger" type="button" aria-label="Simulate trigger">
+              +
+            </button>
+            <button class="icon-button" id="theme-toggle" type="button" aria-label="Toggle dark mode">
+              D
+            </button>
+          </div>
+        </header>
+
+        <section class="metrics-grid" id="metrics-grid" aria-label="Dashboard widgets"></section>
+
+        <section class="workspace-grid">
+          <div class="chat-column">
+            <section class="merchant-card glass-card" id="merchant-card"></section>
+            <section class="trigger-card glass-card" id="trigger-card"></section>
+            <section class="suggestions-card" id="suggestions-card"></section>
+
+            <section class="chat-panel" aria-label="Conversation">
+              <div class="chat-header">
+                <div>
+                  <p class="section-label">WhatsApp thread</p>
+                  <h3 id="chat-title">Conversation</h3>
+                </div>
+                <span id="status-badge" class="status-badge">Active</span>
+              </div>
+
+              <div class="messages" id="message-list" aria-live="polite">
+                <div class="skeleton-line"></div>
+                <div class="skeleton-bubble"></div>
+                <div class="skeleton-line small"></div>
+              </div>
+
+              <div class="typing-row" id="typing-row" hidden>
+                <span></span><span></span><span></span>
+                <p>Vera is composing</p>
+              </div>
+
+              <form class="composer" id="composer-form">
+                <button class="icon-button secondary" type="button" id="magic-compose" aria-label="Generate draft">
+                  V
+                </button>
+                <textarea
+                  id="composer-input"
+                  rows="1"
+                  placeholder="Draft a concise WhatsApp reply..."
+                ></textarea>
+                <button class="send-button" type="submit">Send</button>
+              </form>
+            </section>
+          </div>
+
+          <aside class="right-panel" aria-label="Merchant and context details">
+            <section class="panel-card">
+              <div class="panel-heading">
+                <div>
+                  <p class="section-label">Merchant stats</p>
+                  <h3>Performance</h3>
+                </div>
+                <button class="text-button" type="button" data-expand="stats">Expand</button>
+              </div>
+              <div id="stats-panel"></div>
+            </section>
+
+            <section class="panel-card">
+              <div class="panel-heading">
+                <div>
+                  <p class="section-label">Engagement</p>
+                  <h3>Response trend</h3>
+                </div>
+                <span class="mini-badge">7 days</span>
+              </div>
+              <div class="chart-wrap">
+                <svg id="trend-chart" viewBox="0 0 320 150" role="img" aria-label="Response rate trend"></svg>
+              </div>
+            </section>
+
+            <section class="panel-card">
+              <div class="panel-heading">
+                <div>
+                  <p class="section-label">Context</p>
+                  <h3>Four-context inputs</h3>
+                </div>
+                <button class="text-button" type="button" data-expand="context">Expand</button>
+              </div>
+              <div id="context-panel"></div>
+            </section>
+
+            <section class="panel-card">
+              <div class="panel-heading">
+                <div>
+                  <p class="section-label">Customer</p>
+                  <h3>Details</h3>
+                </div>
+                <span class="mini-badge" id="customer-scope-badge">Optional</span>
+              </div>
+              <div id="customer-panel"></div>
+            </section>
+
+            <section class="panel-card">
+              <div class="panel-heading">
+                <div>
+                  <p class="section-label">History</p>
+                  <h3>Recent turns</h3>
+                </div>
+              </div>
+              <div id="history-panel" class="timeline"></div>
+            </section>
+          </aside>
+        </section>
+      </main>
+    </div>
+
+    <div class="mobile-tabbar" aria-label="Mobile navigation">
+      <button class="active" type="button">Chat</button>
+      <button type="button">Queue</button>
+      <button type="button">Stats</button>
+      <button type="button">Settings</button>
+    </div>
+
+    <div id="toast-host" class="toast-host" aria-live="polite"></div>
+    <script src="./app.js"></script>
+  </body>
+</html>
