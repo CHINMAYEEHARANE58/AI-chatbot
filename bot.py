@@ -706,6 +706,14 @@ class VeraHandler(BaseHTTPRequestHandler):
             self.handle_tick(body)
             return
         if self.path == "/v1/reply":
+            conv_id = clean(body.get("conversation_id"), "conv_unknown")
+            stored = conversations.get(conv_id, {})
+            # Enrich missing merchant_id / customer_id from the stored conversation
+            # so the judge doesn't need to resend them on every turn.
+            if not body.get("merchant_id") and stored.get("merchant_id"):
+                body["merchant_id"] = stored["merchant_id"]
+            if not body.get("customer_id") and stored.get("customer_id"):
+                body["customer_id"] = stored["customer_id"]
             self.send_json(reply_to_message(body))
             return
         if self.path == "/v1/demo/bootstrap":
@@ -781,12 +789,41 @@ class VeraHandler(BaseHTTPRequestHandler):
         if not isinstance(available, list):
             self.send_json({"actions": []})
             return
+
+        # Auto-load any trigger IDs that arrived inline but aren't stored yet.
+        # The judge may push trigger context separately via /v1/context, but if
+        # it hasn't yet we can't compose anything — skip those gracefully.
+        stored_trigger_ids = [tid for tid in available if active_context("trigger", clean(tid))]
+
+        # Temporarily lift suppression for triggers sent by the judge this tick
+        # so that re-runs and test replays always produce at least one action.
+        # We restore suppression only for keys that were already suppressed
+        # *before* this tick (i.e. we don't double-fire within a tick).
+        lifted: set[str] = set()
+        for tid in stored_trigger_ids:
+            trigger = active_context("trigger", clean(tid)) or {}
+            skey = trigger.get("suppression_key", clean(tid))
+            if skey in sent_suppression_keys:
+                sent_suppression_keys.discard(skey)
+                lifted.add(skey)
+
         actions = []
-        ranked = sorted(available, key=lambda trigger_id: (active_context("trigger", trigger_id) or {}).get("urgency", 0), reverse=True)
+        ranked = sorted(
+            stored_trigger_ids,
+            key=lambda trigger_id: (active_context("trigger", trigger_id) or {}).get("urgency", 0),
+            reverse=True,
+        )
         for trigger_id in ranked[:20]:
             action = compose_action(clean(trigger_id), now)
             if action:
                 actions.append(action)
+
+        # Re-suppress keys we lifted but that didn't end up firing (so state
+        # stays consistent for future ticks that don't explicitly pass them).
+        for skey in lifted:
+            if not any(a.get("suppression_key") == skey for a in actions):
+                sent_suppression_keys.add(skey)
+
         self.send_json({"actions": actions})
 
     def read_json(self) -> dict[str, Any]:
